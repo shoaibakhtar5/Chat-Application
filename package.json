@@ -1,0 +1,13 @@
+{
+  "name": "realtime-chat-app",
+  "version": "1.0.0",
+  "description": "A real-time chat application with private messaging and file sharing",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.18.2"
+  }
+}

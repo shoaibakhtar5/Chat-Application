@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quantum Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Username Modal -->
+    <div id="username-modal" class="modal">
+        <div class="modal-content">
+            <div class="avatar big" id="modal-avatar"></div>
+            <input type="text" id="modal-username" maxlength="16" placeholder="Enter your username..." autofocus>
+            <button id="modal-btn">Enter Quantum Chat</button>
+        </div>
+    </div>
+
+    <div class="chat-app" style="display:none;">
+        <aside class="sidebar">
+            <div class="user-card" id="user-card">
+                <div class="avatar big" id="my-avatar"></div>
+                <div class="user-info">
+                    <div class="username" id="my-username"></div>
+                    <div class="status-glow">● Online</div>
+                </div>
+            </div>
+            <div class="users-section">
+                <h3>Online Users</h3>
+                <ul id="users-list"></ul>
+            </div>
+        </aside>
+
+        <main class="main-chat">
+            <div class="chat-tabs">
+                <button id="tab-public" class="tab active">Public Chat</button>
+                <button id="tab-private" class="tab">Private Chat</button>
+            </div>
+            <!-- Public Chat Panel -->
+            <div id="public-chat" class="chat-panel active">
+                <div class="chat-box" id="public-chat-box"></div>
+                <div class="input-area">
+                    <input type="text" id="public-message-input" placeholder="Type a message...">
+                    <button id="public-send-btn" type="button">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Private Chat Panel -->
+            <div id="private-chat" class="chat-panel">
+                <div class="private-header">
+                    <label for="private-user-select">Chat with:</label>
+                    <select id="private-user-select"></select>
+                </div>
+                <div class="chat-box" id="private-chat-box"></div>
+                <div class="input-area">
+                    <input type="text" id="private-message-input" placeholder="Type a private message...">
+                    <button id="private-send-btn" type="button">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="scripts/app.js"></script>
+</body>
+</html>
