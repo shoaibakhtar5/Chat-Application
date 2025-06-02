@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const privateSendBtn = document.getElementById('private-send-btn');
     const tabPublic = document.getElementById('tab-public');
     const tabPrivate = document.getElementById('tab-private');
+    const groupTabs = document.getElementById('group-tabs');
     const publicPanel = document.getElementById('public-chat');
     const privatePanel = document.getElementById('private-chat');
+    const groupChatPanel = document.getElementById('group-chat');
     const privateUserSelect = document.getElementById('private-user-select');
     const myUsernameSpan = document.getElementById('my-username');
     const myAvatar = document.getElementById('my-avatar');
@@ -22,6 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileSaveBtn = document.getElementById('profile-save-btn');
     const profileCancelBtn = document.getElementById('profile-cancel-btn');
     const logoutBtn = document.getElementById('logout-btn');
+    const groupsList = document.getElementById('groups-list');
+    const createGroupBtn = document.getElementById('create-group-btn');
+    const groupModal = document.getElementById('group-modal');
+    const tabCreateGroup = document.getElementById('tab-create-group');
+    const tabJoinGroup = document.getElementById('tab-join-group');
+    const createGroupPanel = document.getElementById('create-group-panel');
+    const joinGroupPanel = document.getElementById('join-group-panel');
+    const groupNameInput = document.getElementById('group-name-input');
+    const groupAvatarInput = document.getElementById('group-avatar-input');
+    const groupCodeInput = document.getElementById('group-code-input');
+    const groupCreateBtn = document.getElementById('group-create-btn');
+    const groupCancelBtn = document.getElementById('group-cancel-btn');
+    const joinGroupCodeInput = document.getElementById('join-group-code-input');
+    const groupJoinBtn = document.getElementById('group-join-btn');
+    const groupCancelBtn2 = document.getElementById('group-cancel-btn2');
+    const groupChatBox = document.getElementById('group-chat-box');
+    const groupMessageInput = document.getElementById('group-message-input');
+    const groupSendBtn = document.getElementById('group-send-btn');
 
     let username = '';
     let ws = null;
@@ -34,19 +54,22 @@ document.addEventListener('DOMContentLoaded', () => {
         displayName: '',
         status: ''
     };
+    let myGroups = {}; // groupId: { name, avatar, members, admins }
+    let groupMessages = {}; // groupId: [messages]
+    let currentGroupId = null;
 
     // Tab switching
     tabPublic.onclick = () => {
-        tabPublic.classList.add('active');
-        tabPrivate.classList.remove('active');
+        setActiveTab(tabPublic);
         publicPanel.classList.add('active');
         privatePanel.classList.remove('active');
+        groupChatPanel.classList.remove('active');
     };
     tabPrivate.onclick = () => {
-        tabPrivate.classList.add('active');
-        tabPublic.classList.remove('active');
+        setActiveTab(tabPrivate);
         publicPanel.classList.remove('active');
         privatePanel.classList.add('active');
+        groupChatPanel.classList.remove('active');
         updatePrivateUserSelect();
     };
 
@@ -62,30 +85,30 @@ document.addEventListener('DOMContentLoaded', () => {
             ws.send(JSON.stringify({ type: "join", username }));
         };
         ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === "users") {
-                    onlineUsers = data.users;
-                    updateUsersList();
-                    updatePrivateUserSelect();
-                } else if (data.type === "message" || data.type === "file") {
-                    if (!data.to) {
-                        publicMessages.push(data);
-                        renderPublicMessages();
-                    } else {
-                        const other = data.username === username ? data.to : data.username;
-                        if (!privateMessages[other]) privateMessages[other] = [];
-                        privateMessages[other].push(data);
-                        if (currentPrivateUser === other) renderPrivateMessages();
-                    }
-                } else if (data.type === "server") {
-                    // Optionally show server messages
-                } else if (data.type === "typing" && data.username !== username) {
-                    // Show "User is typing..." somewhere in the UI
-                } else if (data.type === "stop_typing" && data.username !== username) {
-                    // Hide typing indicator
+            const data = JSON.parse(event.data);
+            if (data.type === "users") {
+                onlineUsers = data.users;
+                updateUsersList();
+                updatePrivateUserSelect();
+            } else if (data.type === "message" || data.type === "file") {
+                if (!data.to) {
+                    publicMessages.push(data);
+                    renderPublicMessages();
+                } else {
+                    const other = data.username === username ? data.to : data.username;
+                    if (!privateMessages[other]) privateMessages[other] = [];
+                    privateMessages[other].push(data);
+                    if (currentPrivateUser === other) renderPrivateMessages();
                 }
-            } catch {}
+            } else if (data.type === "groups_list") {
+                myGroups = data.groups;
+                renderGroups(myGroups);
+                renderGroupTabs(myGroups);
+            } else if (data.type === "group_message") {
+                if (!groupMessages[data.groupId]) groupMessages[data.groupId] = [];
+                groupMessages[data.groupId].push(data);
+                if (currentGroupId === data.groupId) renderGroupMessages();
+            }
         };
     }
 
@@ -113,6 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
             to: currentPrivateUser
         }));
         privateInput.value = '';
+    };
+    groupSendBtn.onclick = () => {
+        const msg = groupMessageInput.value.trim();
+        if (!msg || !currentGroupId) return;
+        ws.send(JSON.stringify({
+            type: "group_message",
+            groupId: currentGroupId,
+            username,
+            text: msg,
+            timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }));
+        groupMessageInput.value = '';
     };
 
     // Rendering
@@ -169,6 +204,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         privateChatBox.scrollTop = privateChatBox.scrollHeight;
+    }
+
+    // Show groups on Home page (Groups list)
+    function renderGroups(groups) {
+        groupsList.innerHTML = '';
+        Object.entries(groups).forEach(([groupId, group]) => {
+            if (!group.members.includes(username)) return;
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="avatar" style="background-image:url('${group.avatar || ''}')">${group.avatar ? '' : group.name[0]}</span>
+                <span class="group-name">${group.name}</span>
+                <span class="group-members">(${group.members.length})</span>
+            `;
+            groupsList.appendChild(li);
+        });
+    }
+
+    // Show group chat panel
+    function showGroupChat(group) {
+        document.querySelectorAll('.chat-panel').forEach(panel => panel.classList.remove('active'));
+        groupChatPanel.classList.add('active');
+        const groupHeader = document.getElementById('group-chat-header');
+        if (groupHeader) {
+            groupHeader.innerHTML = `
+                <div class="group-header-content">
+                    <span class="avatar" style="background-image:url('${group.avatar || ''}')">${group.avatar ? '' : group.name[0]}</span>
+                    <span class="group-title">${group.name}</span>
+                    <span class="group-members-list">
+                        ${group.members.map(m => `
+                            <span class="member-pill${onlineUsers.includes(m) ? ' online' : ''}">
+                                ${m}
+                            </span>
+                        `).join('')}
+                    </span>
+                </div>
+            `;
+        }
+    }
+
+    function renderGroupMessages() {
+        if (!currentGroupId) return;
+        groupChatBox.innerHTML = '';
+        (groupMessages[currentGroupId] || []).forEach(msg => {
+            groupChatBox.innerHTML += `
+                <div class="message">
+                    <div class="message-content">
+                        <b>${msg.username}:</b> ${msg.text}
+                        <span class="timestamp">${msg.timestamp}</span>
+                    </div>
+                </div>`;
+        });
+        groupChatBox.scrollTop = groupChatBox.scrollHeight;
     }
 
     function updateUsersList() {
@@ -327,10 +414,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.chat-app').style.display = '';
             connectWS();
         }
-        // Update UI
         myUsernameSpan.textContent = profile.displayName;
         myAvatar.style.backgroundImage = profile.avatar ? `url(${profile.avatar})` : '';
-        // Optionally show status somewhere
         profileModal.style.display = 'none';
     };
 
@@ -339,8 +424,129 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     logoutBtn.onclick = () => {
-        // Optionally: ws.close();
         location.reload();
     };
-});
 
+    // Modal tab switching
+    tabCreateGroup.onclick = () => {
+        tabCreateGroup.classList.add('active');
+        tabJoinGroup.classList.remove('active');
+        createGroupPanel.style.display = '';
+        joinGroupPanel.style.display = 'none';
+    };
+    tabJoinGroup.onclick = () => {
+        tabJoinGroup.classList.add('active');
+        tabCreateGroup.classList.remove('active');
+        createGroupPanel.style.display = 'none';
+        joinGroupPanel.style.display = '';
+    };
+
+    createGroupBtn.onclick = () => {
+        groupModal.style.display = 'flex';
+        tabCreateGroup.click();
+    };
+
+    [groupCancelBtn, groupCancelBtn2].forEach(btn => {
+        btn.onclick = () => {
+            groupModal.style.display = 'none';
+            groupNameInput.value = '';
+            groupAvatarInput.value = '';
+            groupCodeInput.value = '';
+            joinGroupCodeInput.value = '';
+        };
+    });
+
+    // Group creation: appears on Home page, no auto-join
+    groupCreateBtn.onclick = () => {
+        const name = groupNameInput.value.trim();
+        const code = groupCodeInput.value.trim();
+        if (!name || !code) return alert("Group name and code required!");
+        let avatar = '';
+        const file = groupAvatarInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatar = e.target.result;
+                if (ws && ws.readyState === 1) {
+                    ws.send(JSON.stringify({
+                        type: "create_group",
+                        username,
+                        groupName: name,
+                        groupAvatar: avatar,
+                        groupCode: code
+                    }));
+                } else {
+                    alert("Connection not ready. Please refresh.");
+                }
+                groupModal.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            if (ws && ws.readyState === 1) {
+                ws.send(JSON.stringify({
+                    type: "create_group",
+                    username,
+                    groupName: name,
+                    groupAvatar: '',
+                    groupCode: code
+                }));
+            } else {
+                alert("Connection not ready. Please refresh.");
+            }
+            groupModal.style.display = 'none';
+        }
+    };
+
+    groupJoinBtn.onclick = () => {
+    const code = joinGroupCodeInput.value.trim();
+    if (!code) return alert("Enter a group code!");
+    if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({
+            type: "join_group",
+            username,
+            groupCode: code
+        }));
+    } else {
+        alert("Connection not ready. Please refresh.");
+    }
+    groupModal.style.display = 'none';
+    joinGroupCodeInput.value = '';
+};
+
+    // Add this function if not present
+    function setActiveTab(tabBtn) {
+        document.querySelectorAll('.chat-tabs .tab').forEach(btn => btn.classList.remove('active'));
+        tabBtn.classList.add('active');
+    }
+
+    // Group tabs: require code to enter group chat
+    function renderGroupTabs(groups) {
+        groupTabs.innerHTML = '';
+        Object.entries(groups).forEach(([groupId, group]) => {
+            if (!group.members.includes(username)) return;
+            const btn = document.createElement('button');
+            btn.className = 'tab';
+            btn.textContent = group.name;
+            btn.onclick = () => {
+                const code = prompt(`Enter code for group "${group.name}":`);
+                if (code === group.code) {
+                    setActiveTab(btn);
+                    publicPanel.classList.remove('active');
+                    privatePanel.classList.remove('active');
+                    groupChatPanel.classList.add('active');
+                    currentGroupId = groupId;
+                    showGroupChat(group);
+                    renderGroupMessages();
+                } else if (code !== null) {
+                    alert("Incorrect group code!");
+                }
+            };
+            // Optionally highlight if active
+            if (currentGroupId === groupId && groupChatPanel.classList.contains('active')) {
+                btn.classList.add('active');
+            }
+            groupTabs.appendChild(btn);
+        });
+        
+    }
+});

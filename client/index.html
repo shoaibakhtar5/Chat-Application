@@ -56,12 +56,18 @@
                 <h3>Online Users</h3>
                 <ul id="users-list"></ul>
             </div>
+            <div class="groups-section">
+                <h3>Groups</h3>
+                <ul id="groups-list"></ul>
+                <button id="create-group-btn" class="futuristic-btn">+ Create Group</button>
+            </div>
         </aside>
 
         <main class="main-chat">
             <div class="chat-tabs">
                 <button id="tab-public" class="tab active">Public Chat</button>
                 <button id="tab-private" class="tab">Private Chat</button>
+                <div id="group-tabs" style="display: flex; gap: 0.5rem;"></div>
             </div>
             <!-- Public Chat Panel -->
             <div id="public-chat" class="chat-panel active">
@@ -93,10 +99,60 @@
                     </button>
                 </div>
             </div>
+            <!-- Group Chat Panel -->
+            <div id="group-chat" class="chat-panel">
+                <div id="group-chat-header"></div>
+                <div class="chat-box" id="group-chat-box"></div>
+                <div class="input-area">
+                    <input type="text" id="group-message-input" placeholder="Type a message...">
+                    <button id="group-send-btn" type="button">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </div>
+            </div>
         </main>
     </div>
     <button id="open-profile-btn" class="profile-btn">Edit Profile</button>
     <button id="logout-btn" class="futuristic-btn logout-btn">Logout</button>
+
+    <!-- Group Modal (Create/Join) -->
+    <div id="group-modal" class="modal" style="display:none;">
+        <div class="modal-content profile-modal-content" style="min-width:400px;">
+            <div id="group-modal-tabs" style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+                <button id="tab-create-group" class="futuristic-btn active" style="flex:1;">Create Group</button>
+                <button id="tab-join-group" class="futuristic-btn secondary" style="flex:1;">Join Group</button>
+            </div>
+            <div id="create-group-panel">
+                <div class="profile-field">
+                    <label for="group-name-input">Group Name</label>
+                    <input type="text" id="group-name-input" maxlength="24" placeholder="Enter group name">
+                </div>
+                <div class="profile-field">
+                    <label for="group-avatar-input">Group Avatar</label>
+                    <input type="file" id="group-avatar-input" accept="image/*">
+                </div>
+                <div class="profile-field">
+                    <label for="group-code-input">Group Code</label>
+                    <input type="text" id="group-code-input" maxlength="12" placeholder="Set a join code">
+                </div>
+                <div class="profile-actions">
+                    <button id="group-create-btn" class="futuristic-btn">Create</button>
+                    <button id="group-cancel-btn" class="futuristic-btn secondary">Cancel</button>
+                </div>
+            </div>
+            <div id="join-group-panel" style="display:none;">
+                <div class="profile-field">
+                    <label for="join-group-code-input">Group Code</label>
+                    <input type="text" id="join-group-code-input" maxlength="12" placeholder="Enter group code">
+                </div>
+                <div class="profile-actions">
+                    <button id="group-join-btn" class="futuristic-btn">Join</button>
+                    <button id="group-cancel-btn2" class="futuristic-btn secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="scripts/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
 </body>

@@ -3,6 +3,7 @@ const WS_PORT = 3001;
 const wss = new WebSocket.Server({ port: WS_PORT, host: '0.0.0.0' });
 
 let clients = new Map();
+let groups = {}; // groupId: { name, avatar, code, members: [username], admins: [username] }
 
 wss.on('connection', ws => {
     let username = null;
@@ -18,6 +19,8 @@ wss.on('connection', ws => {
                 username = data.username;
                 clients.set(username, ws);
                 broadcastUsers();
+                // FIX: Broadcast group list to ALL clients, not just the new one
+                broadcastAll(JSON.stringify({ type: "groups_list", groups }));
             } else if (data.type === "message" || data.type === "file") {
                 if (data.to && clients.has(data.to)) {
                     clients.get(data.to).send(JSON.stringify(data));
@@ -27,8 +30,47 @@ wss.on('connection', ws => {
                 } else {
                     broadcastAll(JSON.stringify(data));
                 }
+            } else if (data.type === "create_group") {
+                const groupId = "group_" + Date.now();
+                groups[groupId] = {
+                    name: data.groupName,
+                    avatar: data.groupAvatar,
+                    code: data.groupCode,
+                    members: [data.username],
+                    admins: [data.username]
+                };
+                broadcastAll(JSON.stringify({ type: "groups_list", groups }));
+                // Notify creator of the new group ID
+                if (clients.has(data.username)) {
+                    clients.get(data.username).send(JSON.stringify({ type: "group_created", groupId }));
+                }
+                console.log('Broadcasting groups_list:', groups);
+            } else if (data.type === "join_group") {
+                const groupId = Object.keys(groups).find(id => groups[id].code === data.groupCode);
+                if (groupId && !groups[groupId].members.includes(data.username)) {
+                    groups[groupId].members.push(data.username);
+                    broadcastAll(JSON.stringify({ type: "groups_list", groups }));
+                    // Notify joiner of the group ID
+                    if (clients.has(data.username)) {
+                        clients.get(data.username).send(JSON.stringify({ type: "group_joined", groupId }));
+                    }
+                } else {
+                    if (clients.has(data.username)) {
+                        clients.get(data.username).send(JSON.stringify({ type: "join_group_error", message: "Invalid code or already joined." }));
+                    }
+                }
+            } else if (data.type === "group_message") {
+                if (groups[data.groupId]) {
+                    groups[data.groupId].members.forEach(member => {
+                        if (clients.has(member)) {
+                            clients.get(member).send(JSON.stringify(data));
+                        }
+                    });
+                }
             }
-        } catch {}
+        } catch (e) {
+            console.error('Error handling message:', e);
+        }
     });
 
     ws.on('close', () => {

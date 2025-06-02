@@ -137,6 +137,24 @@ body {
     box-shadow: 0 0 16px var(--primary);
 }
 
+#group-tabs .tab {
+    background: #232946;
+    color: var(--primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.75rem 1.5rem;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow);
+}
+
+#group-tabs .tab.active, #group-tabs .tab:hover {
+    background: var(--primary);
+    color: #232946;
+    box-shadow: 0 0 16px var(--primary);
+}
+
 .chat-panel {
     display: none;
     flex-direction: column;
@@ -487,4 +505,113 @@ body {
 .futuristic-btn.logout-btn:hover {
     background: linear-gradient(90deg, #00ffe7 60%, #eebbc3 100%);
     color: #232946;
+}
+ 
+.groups-section {
+    width: 100%;
+    margin-top: 2rem;
+}
+.groups-section h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+#groups-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+#groups-list li {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 0.5rem;
+    background: #232946cc;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+#groups-list li:hover {
+    background: var(--primary);
+    color: #232946;
+    box-shadow: 0 0 8px var(--primary);
+}
+.group-name {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+.group-members {
+    color: #00ffe7;
+    font-size: 0.95rem;
+}
+#group-chat-header {
+    background: #232946cc;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+.group-header-content .avatar {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+}
+.group-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin-right: 1.5rem;
+}
+.group-members-list {
+    color: #eebbc3;
+    font-size: 1rem;
+    margin-left: 1rem;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.group-members-list .member-pill {
+    background: #181823;
+    color: #eebbc3;
+    border-radius: 1rem;
+    padding: 0.2rem 0.8rem;
+    margin-right: 0.4rem;
+    font-size: 0.95rem;
+    display: inline-block;
+}
+.group-members-list .member-pill.online {
+    background: #00ffe7;
+    color: #232946;
+    font-weight: bold;
+}
+
+/* Futuristic glowing button for Edit Profile */
+.profile-btn {
+    background: linear-gradient(90deg, #00fff0 0%, #7f7fff 100%);
+    color: #181c2f;
+    border: none;
+    border-radius: 2em;
+    padding: 0.7em 2em;
+    font-size: 1.1em;
+    font-weight: bold;
+    box-shadow: 0 0 16px #00fff0, 0 0 32px #7f7fff;
+    transition: background 0.3s, box-shadow 0.3s, color 0.3s;
+    cursor: pointer;
+    margin-top: 1em;
+    letter-spacing: 1px;
+    outline: none;
+    position: relative;
+    z-index: 1;
+}
+
+.profile-btn:hover, .profile-btn:focus {
+    background: linear-gradient(90deg, #7f7fff 0%, #00fff0 100%);
+    color: #fff;
+    box-shadow: 0 0 32px #00fff0, 0 0 64px #7f7fff;
 }
