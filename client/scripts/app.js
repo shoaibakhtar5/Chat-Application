@@ -604,6 +604,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentGroupId === groupId && groupChatPanel.classList.contains('active')) {
                 btn.classList.add('active');
             }
+
+            
             groupTabs.appendChild(btn);
         });
     }
