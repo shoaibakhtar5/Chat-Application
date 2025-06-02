@@ -408,6 +408,16 @@ body {
     gap: 2rem;
 }
 
+.profile-modal-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1.2em;
+    color: #00fff0;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px #00fff0, 0 0 16px #7f7fff;
+}
+
 .profile-avatar-section {
     display: flex;
     flex-direction: column;
