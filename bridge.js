@@ -21,13 +21,31 @@ wss.on('connection', ws => {
                 broadcastUsers();
                 // FIX: Broadcast group list to ALL clients, not just the new one
                 broadcastAll(JSON.stringify({ type: "groups_list", groups }));
-            } else if (data.type === "message" || data.type === "file") {
+            } else if (data.type === "message") {
                 if (data.to && clients.has(data.to)) {
                     clients.get(data.to).send(JSON.stringify(data));
                     if (data.username !== data.to && clients.has(data.username)) {
                         clients.get(data.username).send(JSON.stringify(data));
                     }
                 } else {
+                    broadcastAll(JSON.stringify(data));
+                }
+            } else if (data.type === "file") {
+                if (data.groupId && groups[data.groupId]) {
+                    // Group file: send to all group members
+                    groups[data.groupId].members.forEach(member => {
+                        if (clients.has(member)) {
+                            clients.get(member).send(JSON.stringify(data));
+                        }
+                    });
+                } else if (data.to && clients.has(data.to)) {
+                    // Private file
+                    clients.get(data.to).send(JSON.stringify(data));
+                    if (data.username !== data.to && clients.has(data.username)) {
+                        clients.get(data.username).send(JSON.stringify(data));
+                    }
+                } else {
+                    // Public file
                     broadcastAll(JSON.stringify(data));
                 }
             } else if (data.type === "create_group") {

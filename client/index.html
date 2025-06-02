@@ -103,13 +103,13 @@
             </div>
             <!-- Group Chat Panel -->
             <div id="group-chat" class="chat-panel">
-                <div id="group-chat-header"></div>
                 <div class="chat-box" id="group-chat-box"></div>
                 <div class="input-area">
-                    <input type="text" id="group-message-input" placeholder="Type a message...">
-                    <button id="group-send-btn" type="button">
-                        <span class="send-icon">➤</span>
-                    </button>
+                    <button id="emoji-btn-group" type="button" title="Add emoji">😊</button>
+                    <input type="file" id="group-file-input" style="display:none;">
+                    <button id="group-file-btn" type="button" title="Attach file">📎</button>
+                    <input type="text" id="group-message-input" placeholder="Type a message..." autocomplete="off">
+                    <button id="group-send-btn" class="send-btn" title="Send">&#9658;</button>
                 </div>
             </div>
         </main>

@@ -90,7 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 onlineUsers = data.users;
                 updateUsersList();
                 updatePrivateUserSelect();
-            } else if (data.type === "message" || data.type === "file") {
+            } else if (data.type === "message" || (data.type === "file" && !data.groupId)) {
+                // Public or private
                 if (!data.to) {
                     publicMessages.push(data);
                     renderPublicMessages();
@@ -108,6 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!groupMessages[data.groupId]) groupMessages[data.groupId] = [];
                 groupMessages[data.groupId].push(data);
                 if (currentGroupId === data.groupId) renderGroupMessages();
+            } else if (data.type === "file" && data.groupId) {
+                if (!groupMessages[data.groupId]) groupMessages[data.groupId] = [];
+                groupMessages[data.groupId].push(data);
+                if (currentGroupId === data.groupId) renderGroupMessages();
+            } else if (data.type === "join_group_error") {
+                alert(data.message || "Could not join group.");
             }
         };
     }
@@ -247,13 +254,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentGroupId) return;
         groupChatBox.innerHTML = '';
         (groupMessages[currentGroupId] || []).forEach(msg => {
-            groupChatBox.innerHTML += `
-                <div class="message">
-                    <div class="message-content">
-                        <b>${msg.username}:</b> ${msg.text}
-                        <span class="timestamp">${msg.timestamp}</span>
-                    </div>
-                </div>`;
+            if (msg.type === "file") {
+                groupChatBox.innerHTML += `
+                    <div class="message">
+                        <div class="message-content">
+                            <b>${msg.username}:</b>
+                            <a href="${msg.data}" download="${msg.filename}" target="_blank">
+                                📎 ${msg.filename}
+                            </a>
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                    </div>`;
+            } else {
+                groupChatBox.innerHTML += `
+                    <div class="message">
+                        <div class="message-content">
+                            <b>${msg.username}:</b> ${msg.text}
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                    </div>`;
+            }
         });
         groupChatBox.scrollTop = groupChatBox.scrollHeight;
     }
@@ -343,6 +363,23 @@ document.addEventListener('DOMContentLoaded', () => {
         emojiPickerPrivate.style.display = 'none';
     });
 
+    // Emoji Picker for Group Chat
+    const emojiBtnGroup = document.getElementById('emoji-btn-group');
+    const emojiPickerGroup = document.createElement('emoji-picker');
+    emojiPickerGroup.style.position = 'absolute';
+    emojiPickerGroup.style.bottom = '60px';
+    emojiPickerGroup.style.left = '10px';
+    emojiPickerGroup.style.display = 'none';
+    document.body.appendChild(emojiPickerGroup);
+
+    emojiBtnGroup.addEventListener('click', () => {
+        emojiPickerGroup.style.display = emojiPickerGroup.style.display === 'none' ? 'block' : 'none';
+    });
+    emojiPickerGroup.addEventListener('emoji-click', event => {
+        groupMessageInput.value += event.detail.unicode;
+        emojiPickerGroup.style.display = 'none';
+    });
+
     // File sending for Public Chat
     const publicFileInput = document.getElementById('public-file-input');
     const publicFileBtn = document.getElementById('public-file-btn');
@@ -382,6 +419,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: e.target.result,
                 timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 to: currentPrivateUser
+            }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // File sending for Group Chat
+    const groupFileInput = document.getElementById('group-file-input');
+    const groupFileBtn = document.getElementById('group-file-btn');
+    groupFileBtn.onclick = () => groupFileInput.click();
+    groupFileInput.onchange = () => {
+        const file = groupFileInput.files[0];
+        if (!file || !currentGroupId) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            ws.send(JSON.stringify({
+                type: "file",
+                username,
+                filename: file.name,
+                filetype: file.type,
+                data: e.target.result,
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                groupId: currentGroupId // Indicate this is for a group
             }));
         };
         reader.readAsDataURL(file);
@@ -498,20 +557,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     groupJoinBtn.onclick = () => {
-    const code = joinGroupCodeInput.value.trim();
-    if (!code) return alert("Enter a group code!");
-    if (ws && ws.readyState === 1) {
-        ws.send(JSON.stringify({
-            type: "join_group",
-            username,
-            groupCode: code
-        }));
-    } else {
-        alert("Connection not ready. Please refresh.");
-    }
-    groupModal.style.display = 'none';
-    joinGroupCodeInput.value = '';
-};
+        const code = joinGroupCodeInput.value.trim();
+        if (!code) return alert("Enter a group code!");
+        if (ws && ws.readyState === 1) {
+            ws.send(JSON.stringify({
+                type: "join_group",
+                username,
+                groupCode: code
+            }));
+        } else {
+            alert("Connection not ready. Please refresh.");
+        }
+        groupModal.style.display = 'none';
+        joinGroupCodeInput.value = '';
+    };
 
     // Add this function if not present
     function setActiveTab(tabBtn) {
@@ -547,6 +606,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             groupTabs.appendChild(btn);
         });
-        
     }
 });
