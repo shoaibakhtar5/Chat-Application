@@ -40,6 +40,9 @@
             <div id="public-chat" class="chat-panel active">
                 <div class="chat-box" id="public-chat-box"></div>
                 <div class="input-area">
+                    <button id="emoji-btn-public" type="button" title="Add emoji">😊</button>
+                    <input type="file" id="public-file-input" style="display:none;">
+                    <button id="public-file-btn" type="button" title="Attach file">📎</button>
                     <input type="text" id="public-message-input" placeholder="Type a message...">
                     <button id="public-send-btn" type="button">
                         <span class="send-icon">➤</span>
@@ -54,6 +57,9 @@
                 </div>
                 <div class="chat-box" id="private-chat-box"></div>
                 <div class="input-area">
+                    <button id="emoji-btn-private" type="button" title="Add emoji">😊</button>
+                    <input type="file" id="private-file-input" style="display:none;">
+                    <button id="private-file-btn" type="button" title="Attach file">📎</button>
                     <input type="text" id="private-message-input" placeholder="Type a private message...">
                     <button id="private-send-btn" type="button">
                         <span class="send-icon">➤</span>
@@ -63,5 +69,6 @@
         </main>
     </div>
     <script src="scripts/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
 </body>
 </html>

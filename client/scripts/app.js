@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // WebSocket logic
     function connectWS() {
-        ws = new WebSocket('ws://localhost:3001');
+        ws = new WebSocket('ws://192.168.10.17:3001');
         ws.onopen = () => {
             ws.send(JSON.stringify({ type: "join", username }));
         };
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     onlineUsers = data.users;
                     updateUsersList();
                     updatePrivateUserSelect();
-                } else if (data.type === "message") {
+                } else if (data.type === "message" || data.type === "file") {
                     if (!data.to) {
                         publicMessages.push(data);
                         renderPublicMessages();
@@ -126,15 +126,54 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPublicMessages() {
         publicChatBox.innerHTML = '';
         publicMessages.forEach(msg => {
-            publicChatBox.innerHTML += `<div class="message"><b>${msg.username}:</b> ${msg.text} <span class="timestamp">${msg.timestamp}</span></div>`;
+            if (msg.type === "file") {
+                publicChatBox.innerHTML += `
+                    <div class="message">
+                        <div class="message-content">
+                            <b>${msg.username}:</b>
+                            <a href="${msg.data}" download="${msg.filename}" target="_blank">
+                                📎 ${msg.filename}
+                            </a>
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                    </div>`;
+            } else {
+                publicChatBox.innerHTML += `
+                    <div class="message">
+                        <div class="message-content">
+                            <b>${msg.username}:</b> ${msg.text}
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                    </div>`;
+            }
         });
         publicChatBox.scrollTop = publicChatBox.scrollHeight;
     }
+
     function renderPrivateMessages() {
         if (!currentPrivateUser) return;
         privateChatBox.innerHTML = '';
         (privateMessages[currentPrivateUser] || []).forEach(msg => {
-            privateChatBox.innerHTML += `<div class="message"><b>${msg.username}:</b> ${msg.text} <span class="timestamp">${msg.timestamp}</span></div>`;
+            if (msg.type === "file") {
+                privateChatBox.innerHTML += `
+                    <div class="message">
+                        <div class="message-content">
+                            <b>${msg.username}:</b>
+                            <a href="${msg.data}" download="${msg.filename}" target="_blank">
+                                📎 ${msg.filename}
+                            </a>
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                    </div>`;
+            } else {
+                privateChatBox.innerHTML += `
+                    <div class="message">
+                        <div class="message-content">
+                            <b>${msg.username}:</b> ${msg.text}
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>
+                    </div>`;
+            }
         });
         privateChatBox.scrollTop = privateChatBox.scrollHeight;
     }
@@ -189,5 +228,83 @@ document.addEventListener('DOMContentLoaded', () => {
             ws.send(JSON.stringify({ type: "stop_typing", username }));
         }, 1500);
     });
+
+    // Emoji Picker for Public Chat
+    const emojiBtnPublic = document.getElementById('emoji-btn-public');
+    const emojiPickerPublic = document.createElement('emoji-picker');
+    emojiPickerPublic.style.position = 'absolute';
+    emojiPickerPublic.style.bottom = '60px';
+    emojiPickerPublic.style.left = '10px';
+    emojiPickerPublic.style.display = 'none';
+    document.body.appendChild(emojiPickerPublic);
+
+    emojiBtnPublic.addEventListener('click', () => {
+        emojiPickerPublic.style.display = emojiPickerPublic.style.display === 'none' ? 'block' : 'none';
+    });
+    emojiPickerPublic.addEventListener('emoji-click', event => {
+        publicInput.value += event.detail.unicode;
+        emojiPickerPublic.style.display = 'none';
+    });
+
+    // Emoji Picker for Private Chat
+    const emojiBtnPrivate = document.getElementById('emoji-btn-private');
+    const emojiPickerPrivate = document.createElement('emoji-picker');
+    emojiPickerPrivate.style.position = 'absolute';
+    emojiPickerPrivate.style.bottom = '60px';
+    emojiPickerPrivate.style.left = '10px';
+    emojiPickerPrivate.style.display = 'none';
+    document.body.appendChild(emojiPickerPrivate);
+
+    emojiBtnPrivate.addEventListener('click', () => {
+        emojiPickerPrivate.style.display = emojiPickerPrivate.style.display === 'none' ? 'block' : 'none';
+    });
+    emojiPickerPrivate.addEventListener('emoji-click', event => {
+        privateInput.value += event.detail.unicode;
+        emojiPickerPrivate.style.display = 'none';
+    });
+
+    // File sending for Public Chat
+    const publicFileInput = document.getElementById('public-file-input');
+    const publicFileBtn = document.getElementById('public-file-btn');
+    publicFileBtn.onclick = () => publicFileInput.click();
+    publicFileInput.onchange = () => {
+        const file = publicFileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            ws.send(JSON.stringify({
+                type: "file",
+                username,
+                filename: file.name,
+                filetype: file.type,
+                data: e.target.result,
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                to: null
+            }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // File sending for Private Chat
+    const privateFileInput = document.getElementById('private-file-input');
+    const privateFileBtn = document.getElementById('private-file-btn');
+    privateFileBtn.onclick = () => privateFileInput.click();
+    privateFileInput.onchange = () => {
+        const file = privateFileInput.files[0];
+        if (!file || !currentPrivateUser) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            ws.send(JSON.stringify({
+                type: "file",
+                username,
+                filename: file.name,
+                filetype: file.type,
+                data: e.target.result,
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                to: currentPrivateUser
+            }));
+        };
+        reader.readAsDataURL(file);
+    };
 });
 

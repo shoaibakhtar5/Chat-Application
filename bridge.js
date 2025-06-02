@@ -18,7 +18,7 @@ wss.on('connection', ws => {
                 username = data.username;
                 clients.set(username, ws);
                 broadcastUsers();
-            } else if (data.type === "message") {
+            } else if (data.type === "message" || data.type === "file") {
                 if (data.to && clients.has(data.to)) {
                     clients.get(data.to).send(JSON.stringify(data));
                     if (data.username !== data.to && clients.has(data.username)) {
