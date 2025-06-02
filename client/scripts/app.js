@@ -13,10 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const privateUserSelect = document.getElementById('private-user-select');
     const myUsernameSpan = document.getElementById('my-username');
     const myAvatar = document.getElementById('my-avatar');
-    const modalUsername = document.getElementById('modal-username');
-    const modalAvatar = document.getElementById('modal-avatar');
-    const modalBtn = document.getElementById('modal-btn');
-    const usernameModal = document.getElementById('username-modal');
+    const profileModal = document.getElementById('profile-modal');
+    const openProfileBtn = document.getElementById('open-profile-btn');
+    const profileAvatarInput = document.getElementById('profile-avatar-input');
+    const profileAvatarPreview = document.getElementById('profile-avatar-preview');
+    const profileDisplayName = document.getElementById('profile-displayname');
+    const profileStatus = document.getElementById('profile-status');
+    const profileSaveBtn = document.getElementById('profile-save-btn');
+    const profileCancelBtn = document.getElementById('profile-cancel-btn');
+    const logoutBtn = document.getElementById('logout-btn');
 
     let username = '';
     let ws = null;
@@ -24,6 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let publicMessages = [];
     let privateMessages = {}; // { username: [messages] }
     let currentPrivateUser = null;
+    let profile = {
+        avatar: '', // base64 string
+        displayName: '',
+        status: ''
+    };
 
     // Tab switching
     tabPublic.onclick = () => {
@@ -40,26 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePrivateUserSelect();
     };
 
-    // Modal logic
-    modalUsername.addEventListener('input', () => {
-        modalAvatar.textContent = getAvatar(modalUsername.value);
-    });
-    modalBtn.onclick = () => {
-        const name = modalUsername.value.trim();
-        if (!name) return;
-        username = name;
-        usernameModal.style.display = 'none';
-        document.querySelector('.chat-app').style.display = '';
-        myUsernameSpan.textContent = username;
-        myAvatar.textContent = getAvatar(username);
-        connectWS();
-    };
-    modalUsername.addEventListener('keydown', e => {
-        if (e.key === 'Enter') modalBtn.click();
-    });
+    // Show profile modal on first load
     window.onload = () => {
-        modalUsername.focus();
-        modalAvatar.textContent = getAvatar('');
+        profileModal.style.display = 'block';
     };
 
     // WebSocket logic
@@ -305,6 +298,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
         };
         reader.readAsDataURL(file);
+    };
+
+    // Profile logic
+    openProfileBtn.onclick = () => {
+        profileModal.style.display = 'block';
+        profileAvatarPreview.style.backgroundImage = profile.avatar ? `url(${profile.avatar})` : '';
+        profileDisplayName.value = profile.displayName || username;
+        profileStatus.value = profile.status || '';
+    };
+
+    profileAvatarInput.onchange = () => {
+        const file = profileAvatarInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            profile.avatar = e.target.result;
+            profileAvatarPreview.style.backgroundImage = `url(${profile.avatar})`;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    profileSaveBtn.onclick = () => {
+        profile.displayName = profileDisplayName.value.trim() || username;
+        profile.status = profileStatus.value.trim();
+        if (!username) {
+            username = profile.displayName;
+            document.querySelector('.chat-app').style.display = '';
+            connectWS();
+        }
+        // Update UI
+        myUsernameSpan.textContent = profile.displayName;
+        myAvatar.style.backgroundImage = profile.avatar ? `url(${profile.avatar})` : '';
+        // Optionally show status somewhere
+        profileModal.style.display = 'none';
+    };
+
+    profileCancelBtn.onclick = () => {
+        profileModal.style.display = 'none';
+    };
+
+    logoutBtn.onclick = () => {
+        // Optionally: ws.close();
+        location.reload();
     };
 });
 

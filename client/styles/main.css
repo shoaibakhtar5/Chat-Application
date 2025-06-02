@@ -45,17 +45,15 @@ body {
 }
 
 .avatar.big {
-    width: 72px;
-    height: 72px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    font-size: 2.5rem;
-    color: #232946;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 0.5rem auto;
-    box-shadow: 0 0 24px var(--primary);
+    background-size: cover;
+    background-position: center;
+    display: inline-block;
+    font-size: 2rem;
+    text-align: center;
+    line-height: 64px;
 }
 
 .user-info .username {
@@ -379,4 +377,114 @@ body {
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px);}
     to { opacity: 1; transform: translateY(0);}
+}
+
+/* Profile Modal */
+.profile-modal-content {
+    background: linear-gradient(135deg, #232946 60%, #181823 100%);
+    border-radius: 2rem;
+    box-shadow: 0 0 48px #00ffe7cc, 0 0 0 4px #232946;
+    padding: 2.5rem 2.5rem 2rem 2.5rem;
+    min-width: 370px;
+    align-items: stretch;
+    gap: 2rem;
+}
+
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-upload-label {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.avatar-upload-text {
+    color: #00ffe7;
+    font-size: 1rem;
+    opacity: 0.85;
+    transition: color 0.2s;
+}
+
+.avatar-upload-label:hover .avatar-upload-text {
+    color: #eebbc3;
+}
+
+.profile-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.profile-field label {
+    color: #00ffe7;
+    font-size: 1.05rem;
+    margin-bottom: 0.3rem;
+    letter-spacing: 1px;
+}
+
+.profile-field input {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    border-radius: 1rem;
+    border: 2px solid #00ffe7;
+    background: #181823;
+    color: #fff;
+    font-size: 1.1rem;
+    outline: none;
+    box-shadow: 0 0 8px #00ffe7aa;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.profile-field input:focus {
+    border: 2px solid #eebbc3;
+    box-shadow: 0 0 16px #eebbc3;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.futuristic-btn {
+    background: linear-gradient(90deg, #00ffe7 60%, #eebbc3 100%);
+    border: none;
+    border-radius: 1.2rem;
+    color: #232946;
+    font-weight: bold;
+    padding: 0.9rem 2.2rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 0 16px #00ffe7cc;
+    transition: box-shadow 0.2s, background 0.2s, color 0.2s;
+}
+
+.futuristic-btn.secondary {
+    background: linear-gradient(90deg, #232946 60%, #eebbc3 100%);
+    color: #00ffe7;
+    box-shadow: 0 0 8px #eebbc3cc;
+}
+
+.futuristic-btn.logout-btn {
+    margin-top: 2rem;
+    width: 90%;
+    background: linear-gradient(90deg, #eebbc3 60%, #00ffe7 100%);
+    color: #232946;
+    font-size: 1.1rem;
+    padding: 1rem 0;
+    border-radius: 1.2rem;
+    box-shadow: 0 0 24px #eebbc3cc;
+}
+
+.futuristic-btn.logout-btn:hover {
+    background: linear-gradient(90deg, #00ffe7 60%, #eebbc3 100%);
+    color: #232946;
 }

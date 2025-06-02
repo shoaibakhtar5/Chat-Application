@@ -8,11 +8,38 @@
 </head>
 <body>
     <!-- Username Modal -->
-    <div id="username-modal" class="modal">
+    <!-- <div id="username-modal" class="modal">
         <div class="modal-content">
             <div class="avatar big" id="modal-avatar"></div>
             <input type="text" id="modal-username" maxlength="16" placeholder="Enter your username..." autofocus>
             <button id="modal-btn">Enter Quantum Chat</button>
+        </div>
+    </div> -->
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content profile-modal-content">
+            <div class="profile-avatar-section">
+                <label for="profile-avatar-input" class="avatar-upload-label">
+                    <div class="avatar big" id="profile-avatar-preview"></div>
+                    <span class="avatar-upload-text">Change Avatar</span>
+                </label>
+                <input type="file" id="profile-avatar-input" accept="image/*" style="display:none;">
+            </div>
+            <div class="profile-fields">
+                <div class="profile-field">
+                    <label for="profile-displayname">Display Name</label>
+                    <input type="text" id="profile-displayname" maxlength="16" placeholder="Your cool name">
+                </div>
+                <div class="profile-field">
+                    <label for="profile-status">Status</label>
+                    <input type="text" id="profile-status" maxlength="32" placeholder="e.g. Available, Busy">
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button id="profile-save-btn" class="futuristic-btn">Save</button>
+                <button id="profile-cancel-btn" class="futuristic-btn secondary">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -68,6 +95,8 @@
             </div>
         </main>
     </div>
+    <button id="open-profile-btn" class="profile-btn">Edit Profile</button>
+    <button id="logout-btn" class="futuristic-btn logout-btn">Logout</button>
     <script src="scripts/app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js" type="module"></script>
 </body>
